@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 from __future__ import annotations
-from processing import inputing, handling, rendering
+from process import handle, input, render
 from utils import graphic, colors
 from abc import abstractmethod
 

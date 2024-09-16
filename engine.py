@@ -1,19 +1,37 @@
-# -*- encoding: utf-8 -*-
-from __future__ import annotations
-from process import handle, input, render
-from utils import graphic, colors
-from abc import abstractmethod
+from utils.nodes import *
+from utils.graphic import *
+from process import render
 
-class GameLoop:
+class Loop:
     def __init__(
         self,
-        FPS: int,
-        screen_width: int,
-        screen_height: int,
-    ) -> None:
-        self.FPS = FPS
-        self.screen = graphic.Screen(screen_width, screen_height)
+        tree: Tree,
+        screen: Screen
+    ):
+        self.tree = tree
+        self.screen = screen
+        self.stop = False
 
-    @abstractmethod
-    def process(self):
-        pass
+    def run(self):
+        self.tree.on_ready()
+        self.tree.on_ready()
+        while True:
+            render.clear()
+            self.tree.process()
+            self.tree.physic_process()
+            screen_copy = self.screen.__copy__()
+            for node in self.tree.get_all_nodes():
+                node: Node = node
+                if isinstance(node, Sprite2D):
+                    if node.visible:
+                        if node.follow_parent:
+                            for y, row in enumerate(node.matrix.elements, 0):
+                                for x, element in enumerate(row, 0):
+                                    screen_copy.set(x + node.transform.x + node.parent.transform.x, y + node.transform.y + node.parent.transform.y, element)
+                        else:
+                            for row in node.matrix:
+                                for element in row:
+                                    element: Element = element
+                                    screen_copy.set(x + node.transform.x, y + node.transform.y, element)
+            render.render(screen_copy)
+            render.sleep(self.screen.FPS)

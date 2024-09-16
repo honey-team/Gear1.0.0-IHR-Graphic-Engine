@@ -1,86 +1,38 @@
-from typing import TypeVar
+from __future__ import annotations
 from utils.vectors import *
-from utils.colors import *
-from utils.errors import *
+
+class XCoords(int): pass
+class YCoords(int): pass
+class Color(tuple): pass
+class ScreenWidth(int): pass
+class ScreenHeight(int): pass
+class _FPS(int): pass
 
 class Element:
-    def __init__(
-        self,
-        x: int = 0,
-        y: int = 0,
-        color: Color | HEX | RGB = RGB(0, 0, 0)
-    ):
-        self.x = x
-        self.y = y
+    def __init__(self, x: XCoords, y: YCoords, color: Color = (0, 0, 0, 0)):
+        self.x, self.y = XCoords(x), YCoords(y)
         self.color = color
-        self.vector = Vector2D(self.x, self.y)
 
-class Screen:
-    def __init__(
-        self,
-        width: int,
-        height: int
-    ):
-        self.width = width
-        self.height = height
-        # matrix - двухмерный массив, содержащий пиксели (Element)
-        self.matrix = [[Element(x, y) for x in range(self.width)] for y in range(self.height)]
+class Matrix:
+    def __init__(self, elements: list[list]) -> None:
+        self.elements = elements
+    
+    def get(self, x: XCoords, y: YCoords) -> Element:
+        x, y = int(x), int(y)
+        return self.elements[y][x]
 
-    def get(
-        self,
-        x: int = 0,
-        y: int = 0,
-        vector: Vector2D = Vector2D(0, 0)
-    ) -> Element:
-        # Get x, y
-        x, y = Screen.getXY(x, y, vector)
-        if self.validX(x):
-            if self.validY(y):
-                return self.matrix[y][x]
-            else:
-                raise InvalidY(f"Got: {y}, max: {self.height}")
-        else:
-            raise InvalidX(f"Got: {x}, max: {self.width}")
-    
-    def set(
-        self,
-        x: int = 0,
-        y: int = 0,
-        color: Color = RGB(0, 0, 0),
-        vector: Vector2D = Vector2D(0, 0),
-        element: Element = None
-    ) -> Element:
-        x, y = Screen.getXY(x, y, vector)
-        if self.validX(x):
-            if self.validY(y):
-                e = element or Element(x, y, color) # Create Element
-                self.matrix[y][x] = e
-                return e
-            else:
-                raise InvalidY(f"Got: {y}, max: {self.height - 1}")
-        else:
-            raise InvalidX(f"Got: {x}, max: {self.width - 1}")
-    
-    # Validating
+    def set(self, x: XCoords, y: YCoords, element: Element):
+        x, y = int(x), int(y)
+        if y < len(self.elements) and x < len(self.elements[y]):
+            self.elements[y][x] = element
+        return self
 
-    def validX(self, x: int) -> bool:
-        return x <= self.width - 1
+class Screen(Matrix):
+    def __init__(self, width: ScreenWidth, height: ScreenHeight, FPS: _FPS, elements: list[list] = [[]]):
+        super().__init__(elements)
+        self.width, self.height = width, height
+        self.elements = [[Element(x, y, (0, 0, 0)) for x in range(self.width)] for y in range(self.height)]
+        self.FPS = FPS
     
-    def validY(self, y: int) -> bool:
-        return y <= self.height - 1
-    
-    def validXY(self,
-        x: int = 0,
-        y: int = 0,
-        vector: Vector2D = Vector2D(0, 0)
-    ) -> bool:
-        x, y = Screen.getXY(x, y, vector)
-        return self.validX(x) and self.validY(y)
-    
-    @staticmethod
-    def getXY(
-        x: int = 0,
-        y: int = 0,
-        vector: Vector2D = Vector2D(0, 0)
-    ) -> list:
-        return [x or vector.x, y or vector.y]
+    def __copy__(self) -> Screen:
+        return Screen(self.width, self.height, self.FPS)

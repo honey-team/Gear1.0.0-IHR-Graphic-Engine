@@ -1,20 +1,18 @@
-from utils import graphic
+import rich.color
+from utils.graphic import *
 import time, os
 
 def clear(): os.system("cls||clear")
 
-def render(screen: graphic.Screen):
-    string = str()
-    for row in screen.matrix:
-        row: list = row
-        for pixel in row:
-            pixel: graphic.Element = pixel
-            if pixel.color.list == (0, 0, 0):
-                string += " "
-            if pixel.color.list == (255, 255, 255):
-                string += "#"
+def render(screen: Screen):
+    string = ""
+    for row in screen.elements:
+        for element in row:
+            if element.color == (0, 0, 0):
+                string += "\033[40m" + " "
+            elif element.color == (255, 255, 255):
+                string += "\033[47m" + " "
         string += "\n"
-    print(string)
+    print(string + "\033[0m")
 
-def sleep(FPS: int = 60):
-    time.sleep(1/FPS)
+def sleep(FPS: int = 60): time.sleep(1/FPS)

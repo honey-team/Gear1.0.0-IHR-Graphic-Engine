@@ -1,5 +1,4 @@
-import rich.color
-from utils.graphic import *
+from gear.utils.graphic import *
 import time, os
 
 def clear(): os.system("cls||clear")

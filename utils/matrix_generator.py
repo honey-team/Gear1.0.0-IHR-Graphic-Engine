@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Any
-from utils.graphic import *
+from gear.utils.graphic import *
 from PIL import Image as _Image
 
 class MatrixGenerator(Matrix):

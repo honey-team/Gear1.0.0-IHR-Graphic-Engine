@@ -1,7 +1,6 @@
 from __future__ import annotations
-from abc import abstractmethod
-from utils.vectors import *
-from utils.graphic import *
+from gear.utils.vectors import *
+from gear.utils.graphic import *
 
 class Identifier(str): pass
 class XCoords(int): pass
@@ -15,16 +14,14 @@ class Script:
     def __init__(self):
         self.parent: Node | None = None
         self.tree: Tree | None = None
+        self.node: Node | None = None
 
-    @abstractmethod
     def on_ready(self):
         pass
 
-    @abstractmethod
     def process(self):
         pass
 
-    @abstractmethod
     def physic_process(self):
         pass
 
@@ -33,31 +30,22 @@ class Node:
         self.identifier = Identifier(identifier)
         self.scripts = scripts
         self.nodes = nodes
+        self.tree: Tree | None = None
         self.parent: Node | None = None
 
-        self.set_parents() # Set Node.parent for every node in self.nodes
-        self.set_scripts_nodes_and_trees() # Set Script.node and Script.tree for every script in self.scripts
-    
-    def set_parents(self):
-        """Set Node.parent for every node in self.nodes"""
-        for node in self.nodes:
-            node.parent = self
-    
-    def set_scripts_nodes_and_trees(self):
-        """Set Script.node and Script.tree for every script in self.scripts"""
-        for script in self.scripts:
-            script.node, script.tree = self, self.get_tree()
+    def init_nodes_scripts(self):
+        for script_index in range(len(self.scripts)):
+            self.scripts[script_index].tree = self.tree
+            self.scripts[script_index].node = self
 
-    def get_tree(self) -> Tree:
-        """Get the highest point in nodes tree"""
-        if self.parent is None:
-            return self
-        else:
-            return self.parent.get_tree()
+        for node_index in range(len(self.nodes)):
+            self.nodes[node_index].tree = self.tree
+            self.nodes[node_index].parent = self
+            self.nodes[node_index].init_nodes_scripts()
         
     def get_node(self, __identifier: Identifier[str] | list[str]) -> Node:
         """Gets node by a path or an idenfitier (__idenfitier could be path like "test1/test2")."""
-        if isinstance(__identifier, list): 
+        if isinstance(__identifier, list):
             identifiers = __identifier
         elif isinstance(__identifier, str):
             identifiers = __identifier.split("/")
@@ -97,34 +85,32 @@ class Node:
     
     def add_child(self, node: Node) -> list[Node]:
         """Appends node to current node."""
+        node.parent = self
+        node.tree = self.tree
+        node.init_nodes_scripts()
         self.nodes.append(node)
+        node.on_ready()
         return self.nodes
 
     def on_ready(self):
         """`on_ready` function invokes `on_ready` function in every node's script"""
         for script in self.scripts:
-            script: Script = script
             script.on_ready()
         for node in self.nodes:
-            node: Node = node
             node.on_ready()
     
     def process(self):
         """`process` function invokes `process` function in every node's script"""
         for script in self.scripts:
-            script: Script = script
             script.process()
         for node in self.nodes:
-            node: Node = node
             node.process()
     
     def physic_process(self):
         """`physic_process` function invokes `physic_process` function in every node's script"""
         for script in self.scripts:
-            script: Script = script
             script.physic_process()
         for node in self.nodes:
-            node: Node = node
             node.physic_process()
 
     def __repr__(self) -> str:
@@ -132,8 +118,29 @@ class Node:
 
 class Tree(Node):
     def __init__(self, scripts: tuple[Script] = (), nodes: list[Node] = []):
+        self.parent = None
+        self.loop = None
         super().__init__("tree", scripts, nodes)
-        self.parent = False
+        self.init_nodes_scripts()
+    
+    def init_nodes_scripts(self):
+        for script_index in range(len(self.scripts)):
+            self.scripts[script_index].tree = self
+            self.scripts[script_index].node = self
+
+        for node_index in range(len(self.nodes)):
+            self.nodes[node_index].tree = self
+            self.nodes[node_index].parent = self
+            self.nodes[node_index].init_nodes_scripts()
+    
+    def add_child(self, node: Node) -> list[Node]:
+        """Appends node to current node."""
+        node.parent = self
+        node.tree = self
+        node.init_nodes_scripts()
+        self.nodes.append(node)
+        node.on_ready()
+        return self.nodes
 
     def __repr__(self) -> str:
         return f"Tree()"

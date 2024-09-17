@@ -1,5 +1,5 @@
 from __future__ import annotations
-from utils.vectors import *
+from gear.utils.vectors import *
 
 class XCoords(int): pass
 class YCoords(int): pass

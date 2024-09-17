@@ -1,6 +1,6 @@
-from utils.nodes import *
-from utils.graphic import *
-from process import render
+from gear.utils.nodes import *
+from gear.utils.graphic import *
+from gear.process import render
 
 class Loop:
     def __init__(
@@ -10,10 +10,10 @@ class Loop:
     ):
         self.tree = tree
         self.screen = screen
+        self.tree.loop = self
         self.stop = False
 
     def run(self):
-        self.tree.on_ready()
         self.tree.on_ready()
         while True:
             render.clear()

@@ -1,19 +1,3 @@
-"""
-def set_key(key: str):
-    if keys[key]:
-        keys[key] = False
-    else:
-        keys[key] = True
-
-def del_key(key: str) -> bool:
-    return keys.pop(key)
-
-def get_value(key: str) -> bool:
-    return keys.get(key, None)
-
-for key in keys.keys():
-    keyboard.add_hotkey(key, set_key, args=(key,))"""
-import sys
 from threading import Thread
 from pynput import keyboard
 
